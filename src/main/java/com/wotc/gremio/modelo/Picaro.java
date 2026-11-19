@@ -30,6 +30,11 @@ public class Picaro extends Aventurero {
     }
 
     @Override
+    public String getValorAtributo() {
+        return String.valueOf(herramientasLadron);
+    }
+
+    @Override
     public String simularCombate() {
         return "El Pícaro " + getNombre()
                 + " aprovecha la ventaja táctica para asestar un Ataque Furtivo masivo y se reposiciona.";

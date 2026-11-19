@@ -30,6 +30,11 @@ public class Guerrero extends Aventurero {
     }
 
     @Override
+    public String getValorAtributo() {
+        return String.valueOf(armaduraPesada);
+    }
+
+    @Override
     public String simularCombate() {
         return "El Guerrero " + getNombre()
                 + " usa Oleada de Acción para realizar múltiples ataques físicos continuos.";

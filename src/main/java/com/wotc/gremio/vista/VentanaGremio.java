@@ -52,7 +52,7 @@ public class VentanaGremio extends javax.swing.JFrame {
      */
     public VentanaGremio() {
         initComponents();
-        configurarComponentes();
+        registrarCamposValidables();
     }
 
     /**
@@ -98,6 +98,7 @@ public class VentanaGremio extends javax.swing.JFrame {
         tblGremio = new javax.swing.JTable();
         lblAyudaTabla = new javax.swing.JLabel();
         btnExpulsar = new javax.swing.JButton();
+        btnHistorial = new javax.swing.JButton();
         pnlCombate = new javax.swing.JPanel();
         btnSimular = new javax.swing.JButton();
         lblAyudaCombate = new javax.swing.JLabel();
@@ -235,20 +236,34 @@ public class VentanaGremio extends javax.swing.JFrame {
         lblNombre.setText("Nombre:");
 
         txtNombre.setToolTipText("Solo letras, de 2 a 30 caracteres");
+        txtNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreActionPerformed(evt);
+            }
+        });
+        ((javax.swing.text.AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));
 
         lblNivel.setText("Nivel:");
 
         spnNivel.setModel(new javax.swing.SpinnerNumberModel(1, 1, 20, 1));
         spnNivel.setToolTipText("Nivel entre 1 y 20");
+        bloquearEntradaInvalida(spnNivel);
 
         lblPuntosVida.setText("Puntos de vida:");
 
         spnPuntosVida.setModel(new javax.swing.SpinnerNumberModel(10, 1, 999, 1));
         spnPuntosVida.setToolTipText("Puntos de vida entre 1 y 999");
+        bloquearEntradaInvalida(spnPuntosVida);
 
         lblAtributo.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblAtributo.setForeground(new java.awt.Color(42, 51, 88));
         lblAtributo.setText("¿Usa armadura pesada?");
+
+        txtAtributo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtAtributoActionPerformed(evt);
+            }
+        });
 
         chkAtributo.setText("Sí");
         chkAtributo.setOpaque(false);
@@ -380,6 +395,7 @@ public class VentanaGremio extends javax.swing.JFrame {
         tblGremio.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tblGremio.setShowVerticalLines(false);
         tblGremio.getTableHeader().setReorderingAllowed(false);
+        tblGremio.getColumnModel().getColumn(0).setCellRenderer(new RenderizadorTablaClase());
         scrGremio.setViewportView(tblGremio);
         if (tblGremio.getColumnModel().getColumnCount() > 0) {
             tblGremio.getColumnModel().getColumn(0).setPreferredWidth(120);
@@ -400,6 +416,12 @@ public class VentanaGremio extends javax.swing.JFrame {
         btnExpulsar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnExpulsar.setEnabled(false);
 
+        btnHistorial.setForeground(new java.awt.Color(42, 51, 88));
+        btnHistorial.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/wotc/gremio/iconos/btn_historial.png"))); // NOI18N
+        btnHistorial.setText("Historial");
+        btnHistorial.setToolTipText("Ver todo lo que ha pasado en el gremio (registro_gremio.txt)");
+        btnHistorial.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
         javax.swing.GroupLayout pnlGremioLayout = new javax.swing.GroupLayout(pnlGremio);
         pnlGremio.setLayout(pnlGremioLayout);
         pnlGremioLayout.setHorizontalGroup(
@@ -411,6 +433,8 @@ public class VentanaGremio extends javax.swing.JFrame {
                     .addGroup(pnlGremioLayout.createSequentialGroup()
                         .addComponent(lblAyudaTabla)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnHistorial)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnExpulsar)))
                 .addContainerGap())
         );
@@ -422,6 +446,7 @@ public class VentanaGremio extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlGremioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblAyudaTabla)
+                    .addComponent(btnHistorial)
                     .addComponent(btnExpulsar))
                 .addContainerGap())
         );
@@ -559,23 +584,21 @@ public class VentanaGremio extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
+        // Enter en el nombre equivale a pulsar "Registrar".
+        btnRegistrar.doClick();
+    }//GEN-LAST:event_txtNombreActionPerformed
+
+    private void txtAtributoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAtributoActionPerformed
+        // Enter en el atributo equivale a pulsar "Registrar".
+        btnRegistrar.doClick();
+    }//GEN-LAST:event_txtAtributoActionPerformed
+
     /**
-     * Ajustes que el diseñador no ofrece como propiedad: iconos en la tabla,
-     * botón por defecto y filtros de entrada (validación mientras se escribe).
+     * Asocia cada campo del formulario con el dato que valida, para poder
+     * resaltarlo en rojo cuando el controlador informa un error.
      */
-    private void configurarComponentes() {
-        tblGremio.getColumnModel().getColumn(0).setCellRenderer(new RenderizadorTablaClase());
-        // Enter en los campos de texto equivale a pulsar "Registrar".
-        txtNombre.addActionListener(e -> btnRegistrar.doClick());
-        txtAtributo.addActionListener(e -> btnRegistrar.doClick());
-
-        // Nombre: solo letras, espacios, apóstrofo, guion y punto; máximo 30.
-        ((AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));
-
-        // Los spinners rechazan letras y valores fuera de rango mientras se escribe.
-        bloquearEntradaInvalida(spnNivel);
-        bloquearEntradaInvalida(spnPuntosVida);
-
+    private void registrarCamposValidables() {
         camposFormulario.put(Campo.NOMBRE, txtNombre);
         camposFormulario.put(Campo.NIVEL, spnNivel);
         camposFormulario.put(Campo.PUNTOS_VIDA, spnPuntosVida);
@@ -648,6 +671,10 @@ public class VentanaGremio extends javax.swing.JFrame {
 
     public javax.swing.JButton getBtnExpulsar() {
         return btnExpulsar;
+    }
+
+    public javax.swing.JButton getBtnHistorial() {
+        return btnHistorial;
     }
 
     public javax.swing.JTable getTblGremio() {
@@ -780,6 +807,16 @@ public class VentanaGremio extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
+    /**
+     * Abre la ventana del historial del gremio (diseñada con JDialog Form).
+     *
+     * @param lineas  líneas leídas de registro_gremio.txt
+     * @param archivo nombre del archivo, para indicarlo en la ventana
+     */
+    public void mostrarHistorial(java.util.List<String> lineas, String archivo) {
+        new DialogoHistorial(this, true).mostrar(lineas, archivo);
+    }
+
     private static String estadistica(String valor, String etiqueta) {
         return "<html><center><font size='5' color='#E3B341'><b>" + valor
                 + "</b></font><br>" + etiqueta + "</center></html>";
@@ -792,6 +829,7 @@ public class VentanaGremio extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnExpulsar;
+    private javax.swing.JButton btnHistorial;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnRegistrar;
     private javax.swing.JButton btnSimular;

@@ -10,6 +10,9 @@ import com.wotc.gremio.modelo.ClaseAventurero;
 import com.wotc.gremio.modelo.ResultadoCombate;
 import com.wotc.gremio.modelo.SimuladorCombate;
 import com.wotc.gremio.modelo.TurnoCombate;
+import com.wotc.gremio.excepciones.ArchivoGremioException;
+import com.wotc.gremio.excepciones.FormatoArchivoException;
+import com.wotc.gremio.persistencia.ArchivoGremio;
 import com.wotc.gremio.persistencia.RegistroGremio;
 import com.wotc.gremio.vista.VentanaGremio;
 import java.io.IOException;
@@ -26,6 +29,7 @@ public class GremioController {
     /** Colección polimórfica: cualquier subclase de Aventurero. */
     private final List<Aventurero> aventureros = new ArrayList<>();
     private final RegistroGremio registro;
+    private final ArchivoGremio archivoGremio;
     private final SimuladorCombate simulador;
     private VentanaGremio vista;
 
@@ -34,17 +38,37 @@ public class GremioController {
         this(registro, new SimuladorCombate());
     }
 
-    /** Sobrecarga: permite inyectar el simulador (por ejemplo con dados fijos). */
+    /**
+     * Sobrecarga: permite inyectar el simulador (por ejemplo con dados fijos).
+     * Los aventureros se guardan junto al historial.
+     */
     public GremioController(RegistroGremio registro, SimuladorCombate simulador) {
+        this(registro, simulador,
+                new ArchivoGremio(registro.getArchivo().resolveSibling(ArchivoGremio.NOMBRE_ARCHIVO)));
+    }
+
+    /** Sobrecarga: indica también el archivo donde se guardan los aventureros. */
+    public GremioController(RegistroGremio registro, SimuladorCombate simulador,
+            ArchivoGremio archivoGremio) {
+        if (registro == null || simulador == null || archivoGremio == null) {
+            throw new IllegalArgumentException("El registro, el simulador y el archivo son obligatorios.");
+        }
         this.registro = registro;
         this.simulador = simulador;
+        this.archivoGremio = archivoGremio;
     }
 
     /** Sobrecarga: controlador conectado a la ventana. */
-    public GremioController(VentanaGremio vista, RegistroGremio registro) {
-        this(registro);
+    public GremioController(VentanaGremio vista, RegistroGremio registro, ArchivoGremio archivoGremio) {
+        this(registro, new SimuladorCombate(), archivoGremio);
         this.vista = vista;
         conectarVista();
+        cargarDesdeVista();
+    }
+
+    /** Sobrecarga: ventana con el archivo de aventureros por defecto. */
+    public GremioController(VentanaGremio vista, RegistroGremio registro) {
+        this(vista, registro, new ArchivoGremio());
     }
 
     // ------------------------------------------------------------------
@@ -52,14 +76,15 @@ public class GremioController {
     // ------------------------------------------------------------------
 
     /**
-     * RF1 + RF4: agrega el aventurero y anexa el registro al historial.
-     * Solo se agrega si el historial se pudo escribir.
+     * RF1 + RF4: agrega el aventurero, lo guarda en el archivo del gremio y
+     * anexa el registro al historial. Si algo falla, el gremio queda como estaba.
      *
      * @throws AventureroDuplicadoException si ya hay un aventurero con ese nombre
-     * @throws HistorialException           si no se pudo escribir el archivo
+     * @throws HistorialException           si no se pudo escribir el historial
+     * @throws ArchivoGremioException       si no se pudo guardar el gremio
      */
     public void registrarAventurero(Aventurero aventurero)
-            throws AventureroDuplicadoException, HistorialException {
+            throws AventureroDuplicadoException, HistorialException, ArchivoGremioException {
         if (aventurero == null) {
             throw new IllegalArgumentException("El aventurero no puede ser nulo.");
         }
@@ -72,6 +97,51 @@ public class GremioController {
             throw new HistorialException("guardar el registro", e);
         }
         aventureros.add(aventurero);
+        try {
+            guardarGremio();
+        } catch (ArchivoGremioException e) {
+            aventureros.remove(aventureros.size() - 1);
+            throw e;
+        }
+    }
+
+    /**
+     * Carga los aventureros guardados en el archivo del gremio (por ejemplo al
+     * abrir la aplicación). Los que ya estén en el gremio no se duplican.
+     *
+     * @return cuántos aventureros se cargaron
+     * @throws ArchivoGremioException  si el archivo no se puede leer
+     * @throws FormatoArchivoException si alguna línea está mal formada; en ese
+     *                                 caso no se carga ningún aventurero
+     */
+    public int cargarGremio() throws ArchivoGremioException, FormatoArchivoException {
+        List<Aventurero> guardados;
+        try {
+            guardados = archivoGremio.cargar();
+        } catch (IOException e) {
+            throw new ArchivoGremioException("leer", e);
+        }
+        int cargados = 0;
+        for (Aventurero a : guardados) {
+            if (!existeAventurero(a.getNombre())) {
+                aventureros.add(a);
+                cargados++;
+            }
+        }
+        return cargados;
+    }
+
+    /** Sobrescribe el archivo del gremio con los aventureros actuales. */
+    private void guardarGremio() throws ArchivoGremioException {
+        try {
+            archivoGremio.guardar(aventureros);
+        } catch (IOException e) {
+            throw new ArchivoGremioException("guardar", e);
+        }
+    }
+
+    public ArchivoGremio getArchivoGremio() {
+        return archivoGremio;
     }
 
     /** ¿Hay ya un aventurero con ese nombre? (sin distinguir mayúsculas) */
@@ -85,7 +155,8 @@ public class GremioController {
      *
      * @return el aventurero expulsado
      */
-    public Aventurero expulsarAventurero(int indice) throws HistorialException {
+    public Aventurero expulsarAventurero(int indice)
+            throws HistorialException, ArchivoGremioException {
         if (indice < 0 || indice >= aventureros.size()) {
             throw new IllegalArgumentException("No existe un aventurero en la posición " + indice + ".");
         }
@@ -96,6 +167,12 @@ public class GremioController {
             throw new HistorialException("guardar la expulsión", e);
         }
         aventureros.remove(indice);
+        try {
+            guardarGremio();
+        } catch (ArchivoGremioException e) {
+            aventureros.add(indice, expulsado);
+            throw e;
+        }
         return expulsado;
     }
 
@@ -135,6 +212,19 @@ public class GremioController {
         return simularTurnos().stream().map(TurnoCombate::accion).toList();
     }
 
+    /**
+     * Lee el historial completo del gremio (registros, expulsiones y combates).
+     *
+     * @throws HistorialException si el archivo no se puede leer
+     */
+    public List<String> leerHistorial() throws HistorialException {
+        try {
+            return registro.leerHistorial();
+        } catch (IOException e) {
+            throw new HistorialException("leer los datos", e);
+        }
+    }
+
     public double getNivelPromedio() {
         return aventureros.stream().mapToInt(Aventurero::getNivel).average().orElse(0);
     }
@@ -156,6 +246,7 @@ public class GremioController {
         });
         vista.getBtnSimular().addActionListener(e -> simularDesdeVista());
         vista.getBtnExpulsar().addActionListener(e -> expulsarDesdeVista());
+        vista.getBtnHistorial().addActionListener(e -> historialDesdeVista());
         vista.getTblGremio().getSelectionModel().addListSelectionListener(e ->
                 vista.getBtnExpulsar().setEnabled(vista.getFilaSeleccionada() >= 0));
         vista.mostrarClase(claseSeleccionada());
@@ -183,9 +274,25 @@ public class GremioController {
         } catch (AventureroDuplicadoException ex) {
             vista.mostrarErrorCampo(Campo.NOMBRE, ex.getMessage());
             vista.mostrarFallo("Elige otro nombre: cada aventurero es único.");
-        } catch (HistorialException ex) {
+        } catch (HistorialException | ArchivoGremioException ex) {
             vista.mostrarError(ex.getMessage());
             vista.mostrarFallo("No se registró el aventurero.");
+        }
+    }
+
+    /** Al abrir la ventana, muestra los aventureros guardados en la sesión anterior. */
+    private void cargarDesdeVista() {
+        try {
+            int cargados = cargarGremio();
+            aventureros.forEach(vista::agregarFila);
+            actualizarEstadisticas();
+            if (cargados > 0) {
+                vista.mostrarEstado("Se cargaron " + cargados + " aventureros desde "
+                        + archivoGremio.getArchivo() + ".");
+            }
+        } catch (ArchivoGremioException | FormatoArchivoException ex) {
+            vista.mostrarError(ex.getMessage());
+            vista.mostrarFallo("No se pudo cargar el gremio guardado.");
         }
     }
 
@@ -203,9 +310,21 @@ public class GremioController {
             vista.quitarFila(fila);
             actualizarEstadisticas();
             vista.mostrarExito(elegido.describir() + " ha sido expulsado del gremio.");
-        } catch (HistorialException ex) {
+        } catch (HistorialException | ArchivoGremioException ex) {
             vista.mostrarError(ex.getMessage());
             vista.mostrarFallo("No se expulsó al aventurero.");
+        }
+    }
+
+    /** Abre la ventana con el historial leído de registro_gremio.txt. */
+    private void historialDesdeVista() {
+        try {
+            List<String> lineas = leerHistorial();
+            vista.mostrarHistorial(lineas, registro.getArchivo().toString());
+            vista.mostrarEstado("Historial: " + lineas.size() + " líneas leídas de " + registro.getArchivo() + ".");
+        } catch (HistorialException ex) {
+            vista.mostrarError(ex.getMessage());
+            vista.mostrarFallo("No se pudo leer el historial.");
         }
     }
 

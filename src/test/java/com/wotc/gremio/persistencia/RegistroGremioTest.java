@@ -1,6 +1,7 @@
 package com.wotc.gremio.persistencia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wotc.gremio.modelo.Guerrero;
@@ -60,5 +61,28 @@ class RegistroGremioTest {
         assertTrue(lineas.get(2).endsWith("SIMULACIÓN DE COMBATE (2 aventureros)"));
         assertEquals("    - acción 1", lineas.get(3));
         assertEquals("    - acción 2", lineas.get(4));
+    }
+
+    @Test
+    void leerHistorialDevuelveLoQueSeEscribio() throws Exception {
+        RegistroGremio registro = new RegistroGremio(carpeta.resolve("registro_gremio.txt"));
+        registro.registrarAventurero(new Guerrero("Bruenor", 5, 52, true));
+        registro.registrarExpulsion(new Guerrero("Bruenor", 5, 52, true));
+
+        List<String> lineas = registro.leerHistorial();
+
+        assertEquals(2, lineas.size());
+        assertTrue(lineas.get(0).contains("REGISTRO: Guerrero Bruenor"));
+        assertTrue(lineas.get(1).contains("EXPULSIÓN: Guerrero Bruenor"));
+    }
+
+    @Test
+    void leerHistorialSinArchivoDevuelveUnaListaVacia() throws Exception {
+        assertTrue(new RegistroGremio(carpeta.resolve("vacio.txt")).leerHistorial().isEmpty());
+    }
+
+    @Test
+    void laRutaDelHistorialNoPuedeSerNula() {
+        assertThrows(IllegalArgumentException.class, () -> new RegistroGremio(null));
     }
 }

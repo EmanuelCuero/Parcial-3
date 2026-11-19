@@ -39,6 +39,11 @@ public class Paladin extends Aventurero {
     }
 
     @Override
+    public String getValorAtributo() {
+        return String.valueOf(puntosFuerza);
+    }
+
+    @Override
     public String simularCombate() {
         return "El Paladín " + getNombre()
                 + " consume magia para imbuir su arma con un Castigo Divino de daño radiante.";

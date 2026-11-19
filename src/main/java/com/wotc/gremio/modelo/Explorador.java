@@ -36,6 +36,11 @@ public class Explorador extends Aventurero {
     }
 
     @Override
+    public String getValorAtributo() {
+        return terrenoFavorecido;
+    }
+
+    @Override
     public String simularCombate() {
         return "El Explorador " + getNombre()
                 + " aplica Marca del Cazador sobre el objetivo para maximizar su daño sostenido.";
