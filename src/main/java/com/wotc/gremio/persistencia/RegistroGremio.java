@@ -4,6 +4,7 @@ import com.wotc.gremio.modelo.Aventurero;
 import com.wotc.gremio.modelo.Enemigo;
 import com.wotc.gremio.modelo.ResultadoCombate;
 import com.wotc.gremio.modelo.TurnoCombate;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,10 +13,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Anexa el historial del gremio (registros y combates) a un archivo de texto plano.
+ * Anexa el historial del gremio (registros y combates) a un archivo de texto plano
+ * y permite leerlo de nuevo.
  */
 public class RegistroGremio {
 
@@ -33,6 +36,9 @@ public class RegistroGremio {
 
     /** Sobrecarga: permite indicar otro archivo (útil en las pruebas). */
     public RegistroGremio(Path archivo) {
+        if (archivo == null) {
+            throw new IllegalArgumentException("La ruta del historial no puede ser nula.");
+        }
         this.archivo = archivo;
     }
 
@@ -83,6 +89,24 @@ public class RegistroGremio {
             texto.append("    - ").append(accion).append(System.lineSeparator());
         }
         anexar(texto.toString());
+    }
+
+    /**
+     * Lee el historial completo, línea por línea. Si todavía no se ha escrito
+     * nada devuelve una lista vacía. El lector se cierra con try-with-resources.
+     */
+    public List<String> leerHistorial() throws IOException {
+        List<String> lineas = new ArrayList<>();
+        if (Files.notExists(archivo)) {
+            return lineas;
+        }
+        try (BufferedReader lector = Files.newBufferedReader(archivo, StandardCharsets.UTF_8)) {
+            String linea;
+            while ((linea = lector.readLine()) != null) {
+                lineas.add(linea);
+            }
+        }
+        return lineas;
     }
 
     private void anexar(String texto) throws IOException {
