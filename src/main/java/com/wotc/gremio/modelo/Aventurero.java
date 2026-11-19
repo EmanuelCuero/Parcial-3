@@ -67,6 +67,20 @@ public abstract class Aventurero implements IAccionCombate {
      */
     public abstract String getAtributoEspecial();
 
+    /**
+     * @return el valor del atributo especial sin etiqueta (por ejemplo "true", "4"
+     *         o "Lathander"), usado para guardar el gremio en un archivo
+     */
+    public abstract String getValorAtributo();
+
+    /**
+     * Indica si el aventurero apoya al grupo en lugar de atacar o curar.
+     * Las clases de apoyo (como el Bardo) lo sobrescriben.
+     */
+    public boolean esApoyo() {
+        return false;
+    }
+
     // ------------------------------------------------------------------
     // Mecánicas de combate con dados (D&D 5e)
     // ------------------------------------------------------------------

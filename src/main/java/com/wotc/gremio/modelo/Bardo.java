@@ -36,6 +36,17 @@ public class Bardo extends Aventurero {
     }
 
     @Override
+    public String getValorAtributo() {
+        return instrumentoMusical;
+    }
+
+    /** El Bardo no hace daño: inspira a sus aliados. */
+    @Override
+    public boolean esApoyo() {
+        return true;
+    }
+
+    @Override
     public String simularCombate() {
         return "El Bardo " + getNombre()
                 + " toca su instrumento para otorgar Inspiración Bárdica a un aliado.";

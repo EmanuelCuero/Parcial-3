@@ -48,6 +48,11 @@ public class Monje extends Aventurero {
     }
 
     @Override
+    public String getValorAtributo() {
+        return String.valueOf(puntosKi);
+    }
+
+    @Override
     public String simularCombate() {
         return "El Monje " + getNombre()
                 + " gasta puntos de Ki para ejecutar una Ráfaga de Golpes y un Ataque Aturdidor.";
