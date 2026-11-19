@@ -225,6 +225,23 @@ public class GremioController {
         }
     }
 
+    /**
+     * Resume el historial contando registros, expulsiones y combates,
+     * por ejemplo "4 registros · 1 expulsión · 2 combates — guardado en registro_gremio.txt".
+     */
+    public String resumirHistorial(List<String> lineas) {
+        long registros = lineas.stream().filter(l -> l.contains("] REGISTRO:")).count();
+        long expulsiones = lineas.stream().filter(l -> l.contains("] EXPULSIÓN:")).count();
+        long combates = lineas.stream().filter(l -> l.contains("] SIMULACIÓN DE COMBATE")).count();
+        return contar(registros, "registro", "registros") + " · "
+                + contar(expulsiones, "expulsión", "expulsiones") + " · "
+                + contar(combates, "combate", "combates") + " — guardado en " + registro.getArchivo();
+    }
+
+    private static String contar(long cantidad, String singular, String plural) {
+        return cantidad + " " + (cantidad == 1 ? singular : plural);
+    }
+
     public double getNivelPromedio() {
         return aventureros.stream().mapToInt(Aventurero::getNivel).average().orElse(0);
     }
@@ -240,6 +257,9 @@ public class GremioController {
     private void conectarVista() {
         vista.getCmbClase().addActionListener(e -> vista.mostrarClase(claseSeleccionada()));
         vista.getBtnRegistrar().addActionListener(e -> registrarDesdeVista());
+        // Enter en el nombre o en el atributo equivale a pulsar "Registrar".
+        vista.getTxtNombre().addActionListener(e -> registrarDesdeVista());
+        vista.getTxtAtributo().addActionListener(e -> registrarDesdeVista());
         vista.getBtnLimpiar().addActionListener(e -> {
             vista.limpiarFormulario();
             vista.mostrarEstado("Formulario limpio.");
@@ -320,7 +340,7 @@ public class GremioController {
     private void historialDesdeVista() {
         try {
             List<String> lineas = leerHistorial();
-            vista.mostrarHistorial(lineas, registro.getArchivo().toString());
+            vista.mostrarHistorial(lineas, resumirHistorial(lineas));
             vista.mostrarEstado("Historial: " + lineas.size() + " líneas leídas de " + registro.getArchivo() + ".");
         } catch (HistorialException ex) {
             vista.mostrarError(ex.getMessage());
