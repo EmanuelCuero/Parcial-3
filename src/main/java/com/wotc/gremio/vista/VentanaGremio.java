@@ -52,7 +52,7 @@ public class VentanaGremio extends javax.swing.JFrame {
      */
     public VentanaGremio() {
         initComponents();
-        configurarComponentes();
+        registrarCamposValidables();
     }
 
     /**
@@ -236,20 +236,34 @@ public class VentanaGremio extends javax.swing.JFrame {
         lblNombre.setText("Nombre:");
 
         txtNombre.setToolTipText("Solo letras, de 2 a 30 caracteres");
+        txtNombre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNombreActionPerformed(evt);
+            }
+        });
+        ((javax.swing.text.AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));
 
         lblNivel.setText("Nivel:");
 
         spnNivel.setModel(new javax.swing.SpinnerNumberModel(1, 1, 20, 1));
         spnNivel.setToolTipText("Nivel entre 1 y 20");
+        bloquearEntradaInvalida(spnNivel);
 
         lblPuntosVida.setText("Puntos de vida:");
 
         spnPuntosVida.setModel(new javax.swing.SpinnerNumberModel(10, 1, 999, 1));
         spnPuntosVida.setToolTipText("Puntos de vida entre 1 y 999");
+        bloquearEntradaInvalida(spnPuntosVida);
 
         lblAtributo.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblAtributo.setForeground(new java.awt.Color(42, 51, 88));
         lblAtributo.setText("¿Usa armadura pesada?");
+
+        txtAtributo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtAtributoActionPerformed(evt);
+            }
+        });
 
         chkAtributo.setText("Sí");
         chkAtributo.setOpaque(false);
@@ -381,6 +395,7 @@ public class VentanaGremio extends javax.swing.JFrame {
         tblGremio.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tblGremio.setShowVerticalLines(false);
         tblGremio.getTableHeader().setReorderingAllowed(false);
+        tblGremio.getColumnModel().getColumn(0).setCellRenderer(new RenderizadorTablaClase());
         scrGremio.setViewportView(tblGremio);
         if (tblGremio.getColumnModel().getColumnCount() > 0) {
             tblGremio.getColumnModel().getColumn(0).setPreferredWidth(120);
@@ -569,23 +584,21 @@ public class VentanaGremio extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
+        // Enter en el nombre equivale a pulsar "Registrar".
+        btnRegistrar.doClick();
+    }//GEN-LAST:event_txtNombreActionPerformed
+
+    private void txtAtributoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAtributoActionPerformed
+        // Enter en el atributo equivale a pulsar "Registrar".
+        btnRegistrar.doClick();
+    }//GEN-LAST:event_txtAtributoActionPerformed
+
     /**
-     * Ajustes que el diseñador no ofrece como propiedad: iconos en la tabla,
-     * botón por defecto y filtros de entrada (validación mientras se escribe).
+     * Asocia cada campo del formulario con el dato que valida, para poder
+     * resaltarlo en rojo cuando el controlador informa un error.
      */
-    private void configurarComponentes() {
-        tblGremio.getColumnModel().getColumn(0).setCellRenderer(new RenderizadorTablaClase());
-        // Enter en los campos de texto equivale a pulsar "Registrar".
-        txtNombre.addActionListener(e -> btnRegistrar.doClick());
-        txtAtributo.addActionListener(e -> btnRegistrar.doClick());
-
-        // Nombre: solo letras, espacios, apóstrofo, guion y punto; máximo 30.
-        ((AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));
-
-        // Los spinners rechazan letras y valores fuera de rango mientras se escribe.
-        bloquearEntradaInvalida(spnNivel);
-        bloquearEntradaInvalida(spnPuntosVida);
-
+    private void registrarCamposValidables() {
         camposFormulario.put(Campo.NOMBRE, txtNombre);
         camposFormulario.put(Campo.NIVEL, spnNivel);
         camposFormulario.put(Campo.PUNTOS_VIDA, spnPuntosVida);
@@ -795,47 +808,13 @@ public class VentanaGremio extends javax.swing.JFrame {
     }
 
     /**
-     * Muestra en una ventana el historial del gremio (registros, expulsiones y
-     * combates), con lo más reciente al final.
+     * Abre la ventana del historial del gremio (diseñada con JDialog Form).
      *
      * @param lineas  líneas leídas de registro_gremio.txt
      * @param archivo nombre del archivo, para indicarlo en la ventana
      */
     public void mostrarHistorial(java.util.List<String> lineas, String archivo) {
-        long registros = lineas.stream().filter(l -> l.contains("] REGISTRO:")).count();
-        long expulsiones = lineas.stream().filter(l -> l.contains("] EXPULSIÓN:")).count();
-        long combates = lineas.stream().filter(l -> l.contains("] SIMULACIÓN DE COMBATE")).count();
-
-        javax.swing.JTextArea texto = new javax.swing.JTextArea(lineas.isEmpty()
-                ? "Todavía no hay nada en el historial.\nRegistra un aventurero o simula un combate."
-                : String.join("\n", lineas));
-        texto.setEditable(false);
-        texto.setLineWrap(true);
-        texto.setWrapStyleWord(true);
-        texto.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
-        texto.setForeground(new Color(30, 37, 64));
-        texto.setMargin(new java.awt.Insets(8, 10, 8, 10));
-        texto.setCaretPosition(texto.getDocument().getLength());
-
-        javax.swing.JScrollPane desplazamiento = new javax.swing.JScrollPane(texto);
-        desplazamiento.setPreferredSize(new java.awt.Dimension(820, 420));
-
-        javax.swing.JLabel resumen = new javax.swing.JLabel(contar(registros, "registro", "registros") + " · "
-                + contar(expulsiones, "expulsión", "expulsiones") + " · "
-                + contar(combates, "combate", "combates") + " — guardado en " + archivo);
-        resumen.setForeground(COLOR_TEXTO_SUAVE);
-        resumen.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 8, 0));
-
-        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout());
-        panel.add(resumen, java.awt.BorderLayout.NORTH);
-        panel.add(desplazamiento, java.awt.BorderLayout.CENTER);
-
-        JOptionPane.showMessageDialog(this, panel, "Historial del gremio", JOptionPane.PLAIN_MESSAGE,
-                new javax.swing.ImageIcon(getClass().getResource("/com/wotc/gremio/iconos/emblema_32.png")));
-    }
-
-    private static String contar(long cantidad, String singular, String plural) {
-        return cantidad + " " + (cantidad == 1 ? singular : plural);
+        new DialogoHistorial(this, true).mostrar(lineas, archivo);
     }
 
     private static String estadistica(String valor, String etiqueta) {

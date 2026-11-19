@@ -425,6 +425,12 @@
               <Properties>
                 <Property name="toolTipText" type="java.lang.String" value="Solo letras, de 2 a 30 caracteres"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtNombreActionPerformed"/>
+              </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="((javax.swing.text.AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="lblNivel">
               <Properties>
@@ -438,6 +444,9 @@
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="Nivel entre 1 y 20"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="bloquearEntradaInvalida(spnNivel);"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="lblPuntosVida">
               <Properties>
@@ -451,6 +460,9 @@
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value="Puntos de vida entre 1 y 999"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="bloquearEntradaInvalida(spnPuntosVida);"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JSeparator" name="sepAtributo">
             </Component>
@@ -466,6 +478,9 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="txtAtributo">
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtAtributoActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JCheckBox" name="chkAtributo">
               <Properties>
@@ -646,6 +661,9 @@
                       <TableHeader reorderingAllowed="false" resizingAllowed="true"/>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="tblGremio.getColumnModel().getColumn(0).setCellRenderer(new RenderizadorTablaClase());"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>
