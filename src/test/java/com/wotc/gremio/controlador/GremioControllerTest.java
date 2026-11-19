@@ -263,4 +263,21 @@ class GremioControllerTest {
     void elHistorialEstaVacioAlEmpezar() throws Exception {
         assertTrue(controlador.leerHistorial().isEmpty());
     }
+
+    @Test
+    void elResumenDelHistorialCuentaCadaTipoDeEvento() throws Exception {
+        controlador.registrarAventurero(new Guerrero("Bruenor", 5, 52, true));
+        controlador.registrarAventurero(new Mago("Elminster", 12, 61, 9));
+        controlador.simularBatalla();
+        controlador.expulsarAventurero(1);
+
+        String resumen = controlador.resumirHistorial(controlador.leerHistorial());
+
+        assertTrue(resumen.startsWith("2 registros · 1 expulsión · 1 combate"), resumen);
+    }
+
+    @Test
+    void elResumenDeUnHistorialVacioEsCero() {
+        assertTrue(controlador.resumirHistorial(List.of()).startsWith("0 registros · 0 expulsiones · 0 combates"));
+    }
 }
