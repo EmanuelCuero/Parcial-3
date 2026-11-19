@@ -236,11 +236,6 @@ public class VentanaGremio extends javax.swing.JFrame {
         lblNombre.setText("Nombre:");
 
         txtNombre.setToolTipText("Solo letras, de 2 a 30 caracteres");
-        txtNombre.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNombreActionPerformed(evt);
-            }
-        });
         ((javax.swing.text.AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));
 
         lblNivel.setText("Nivel:");
@@ -258,12 +253,6 @@ public class VentanaGremio extends javax.swing.JFrame {
         lblAtributo.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lblAtributo.setForeground(new java.awt.Color(42, 51, 88));
         lblAtributo.setText("¿Usa armadura pesada?");
-
-        txtAtributo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtAtributoActionPerformed(evt);
-            }
-        });
 
         chkAtributo.setText("Sí");
         chkAtributo.setOpaque(false);
@@ -584,16 +573,6 @@ public class VentanaGremio extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtNombreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNombreActionPerformed
-        // Enter en el nombre equivale a pulsar "Registrar".
-        btnRegistrar.doClick();
-    }//GEN-LAST:event_txtNombreActionPerformed
-
-    private void txtAtributoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAtributoActionPerformed
-        // Enter en el atributo equivale a pulsar "Registrar".
-        btnRegistrar.doClick();
-    }//GEN-LAST:event_txtAtributoActionPerformed
-
     /**
      * Asocia cada campo del formulario con el dato que valida, para poder
      * resaltarlo en rojo cuando el controlador informa un error.
@@ -655,6 +634,14 @@ public class VentanaGremio extends javax.swing.JFrame {
 
     public javax.swing.JComboBox<String> getCmbClase() {
         return cmbClase;
+    }
+
+    public javax.swing.JTextField getTxtNombre() {
+        return txtNombre;
+    }
+
+    public javax.swing.JTextField getTxtAtributo() {
+        return txtAtributo;
     }
 
     public javax.swing.JButton getBtnRegistrar() {
@@ -811,10 +798,10 @@ public class VentanaGremio extends javax.swing.JFrame {
      * Abre la ventana del historial del gremio (diseñada con JDialog Form).
      *
      * @param lineas  líneas leídas de registro_gremio.txt
-     * @param archivo nombre del archivo, para indicarlo en la ventana
+     * @param resumen resumen preparado por el controlador
      */
-    public void mostrarHistorial(java.util.List<String> lineas, String archivo) {
-        new DialogoHistorial(this, true).mostrar(lineas, archivo);
+    public void mostrarHistorial(java.util.List<String> lineas, String resumen) {
+        new DialogoHistorial(this, true).mostrar(lineas, resumen);
     }
 
     private static String estadistica(String valor, String etiqueta) {

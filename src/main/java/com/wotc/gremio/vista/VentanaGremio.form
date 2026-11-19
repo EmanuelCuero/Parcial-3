@@ -425,9 +425,6 @@
               <Properties>
                 <Property name="toolTipText" type="java.lang.String" value="Solo letras, de 2 a 30 caracteres"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtNombreActionPerformed"/>
-              </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="((javax.swing.text.AbstractDocument) txtNombre.getDocument()).setDocumentFilter(FiltroEntrada.letras(30));"/>
               </AuxValues>
@@ -478,9 +475,6 @@
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="txtAtributo">
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtAtributoActionPerformed"/>
-              </Events>
             </Component>
             <Component class="javax.swing.JCheckBox" name="chkAtributo">
               <Properties>

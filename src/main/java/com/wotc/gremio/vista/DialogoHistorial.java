@@ -25,26 +25,16 @@ public class DialogoHistorial extends javax.swing.JDialog {
      * al final.
      *
      * @param lineas  líneas leídas de registro_gremio.txt
-     * @param archivo nombre del archivo, para indicarlo en el resumen
+     * @param resumen resumen preparado por el controlador
      */
-    public void mostrar(List<String> lineas, String archivo) {
-        long registros = lineas.stream().filter(l -> l.contains("] REGISTRO:")).count();
-        long expulsiones = lineas.stream().filter(l -> l.contains("] EXPULSIÓN:")).count();
-        long combates = lineas.stream().filter(l -> l.contains("] SIMULACIÓN DE COMBATE")).count();
-
-        lblResumen.setText(contar(registros, "registro", "registros") + " · "
-                + contar(expulsiones, "expulsión", "expulsiones") + " · "
-                + contar(combates, "combate", "combates") + " — guardado en " + archivo);
+    public void mostrar(List<String> lineas, String resumen) {
+        lblResumen.setText(resumen);
         txtHistorial.setText(lineas.isEmpty()
                 ? "Todavía no hay nada en el historial.\nRegistra un aventurero o simula un combate."
                 : String.join("\n", lineas));
         txtHistorial.setCaretPosition(txtHistorial.getDocument().getLength());
         setLocationRelativeTo(getParent());
         setVisible(true);
-    }
-
-    private static String contar(long cantidad, String singular, String plural) {
-        return cantidad + " " + (cantidad == 1 ? singular : plural);
     }
 
     /**
