@@ -212,6 +212,19 @@ public class GremioController {
         return simularTurnos().stream().map(TurnoCombate::accion).toList();
     }
 
+    /**
+     * Lee el historial completo del gremio (registros, expulsiones y combates).
+     *
+     * @throws HistorialException si el archivo no se puede leer
+     */
+    public List<String> leerHistorial() throws HistorialException {
+        try {
+            return registro.leerHistorial();
+        } catch (IOException e) {
+            throw new HistorialException("leer los datos", e);
+        }
+    }
+
     public double getNivelPromedio() {
         return aventureros.stream().mapToInt(Aventurero::getNivel).average().orElse(0);
     }
@@ -233,6 +246,7 @@ public class GremioController {
         });
         vista.getBtnSimular().addActionListener(e -> simularDesdeVista());
         vista.getBtnExpulsar().addActionListener(e -> expulsarDesdeVista());
+        vista.getBtnHistorial().addActionListener(e -> historialDesdeVista());
         vista.getTblGremio().getSelectionModel().addListSelectionListener(e ->
                 vista.getBtnExpulsar().setEnabled(vista.getFilaSeleccionada() >= 0));
         vista.mostrarClase(claseSeleccionada());
@@ -299,6 +313,18 @@ public class GremioController {
         } catch (HistorialException | ArchivoGremioException ex) {
             vista.mostrarError(ex.getMessage());
             vista.mostrarFallo("No se expulsó al aventurero.");
+        }
+    }
+
+    /** Abre la ventana con el historial leído de registro_gremio.txt. */
+    private void historialDesdeVista() {
+        try {
+            List<String> lineas = leerHistorial();
+            vista.mostrarHistorial(lineas, registro.getArchivo().toString());
+            vista.mostrarEstado("Historial: " + lineas.size() + " líneas leídas de " + registro.getArchivo() + ".");
+        } catch (HistorialException ex) {
+            vista.mostrarError(ex.getMessage());
+            vista.mostrarFallo("No se pudo leer el historial.");
         }
     }
 
