@@ -98,6 +98,7 @@ public class VentanaGremio extends javax.swing.JFrame {
         tblGremio = new javax.swing.JTable();
         lblAyudaTabla = new javax.swing.JLabel();
         btnExpulsar = new javax.swing.JButton();
+        btnHistorial = new javax.swing.JButton();
         pnlCombate = new javax.swing.JPanel();
         btnSimular = new javax.swing.JButton();
         lblAyudaCombate = new javax.swing.JLabel();
@@ -400,6 +401,12 @@ public class VentanaGremio extends javax.swing.JFrame {
         btnExpulsar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnExpulsar.setEnabled(false);
 
+        btnHistorial.setForeground(new java.awt.Color(42, 51, 88));
+        btnHistorial.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/wotc/gremio/iconos/btn_historial.png"))); // NOI18N
+        btnHistorial.setText("Historial");
+        btnHistorial.setToolTipText("Ver todo lo que ha pasado en el gremio (registro_gremio.txt)");
+        btnHistorial.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
         javax.swing.GroupLayout pnlGremioLayout = new javax.swing.GroupLayout(pnlGremio);
         pnlGremio.setLayout(pnlGremioLayout);
         pnlGremioLayout.setHorizontalGroup(
@@ -411,6 +418,8 @@ public class VentanaGremio extends javax.swing.JFrame {
                     .addGroup(pnlGremioLayout.createSequentialGroup()
                         .addComponent(lblAyudaTabla)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnHistorial)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnExpulsar)))
                 .addContainerGap())
         );
@@ -422,6 +431,7 @@ public class VentanaGremio extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlGremioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblAyudaTabla)
+                    .addComponent(btnHistorial)
                     .addComponent(btnExpulsar))
                 .addContainerGap())
         );
@@ -650,6 +660,10 @@ public class VentanaGremio extends javax.swing.JFrame {
         return btnExpulsar;
     }
 
+    public javax.swing.JButton getBtnHistorial() {
+        return btnHistorial;
+    }
+
     public javax.swing.JTable getTblGremio() {
         return tblGremio;
     }
@@ -780,6 +794,50 @@ public class VentanaGremio extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
+    /**
+     * Muestra en una ventana el historial del gremio (registros, expulsiones y
+     * combates), con lo más reciente al final.
+     *
+     * @param lineas  líneas leídas de registro_gremio.txt
+     * @param archivo nombre del archivo, para indicarlo en la ventana
+     */
+    public void mostrarHistorial(java.util.List<String> lineas, String archivo) {
+        long registros = lineas.stream().filter(l -> l.contains("] REGISTRO:")).count();
+        long expulsiones = lineas.stream().filter(l -> l.contains("] EXPULSIÓN:")).count();
+        long combates = lineas.stream().filter(l -> l.contains("] SIMULACIÓN DE COMBATE")).count();
+
+        javax.swing.JTextArea texto = new javax.swing.JTextArea(lineas.isEmpty()
+                ? "Todavía no hay nada en el historial.\nRegistra un aventurero o simula un combate."
+                : String.join("\n", lineas));
+        texto.setEditable(false);
+        texto.setLineWrap(true);
+        texto.setWrapStyleWord(true);
+        texto.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
+        texto.setForeground(new Color(30, 37, 64));
+        texto.setMargin(new java.awt.Insets(8, 10, 8, 10));
+        texto.setCaretPosition(texto.getDocument().getLength());
+
+        javax.swing.JScrollPane desplazamiento = new javax.swing.JScrollPane(texto);
+        desplazamiento.setPreferredSize(new java.awt.Dimension(820, 420));
+
+        javax.swing.JLabel resumen = new javax.swing.JLabel(contar(registros, "registro", "registros") + " · "
+                + contar(expulsiones, "expulsión", "expulsiones") + " · "
+                + contar(combates, "combate", "combates") + " — guardado en " + archivo);
+        resumen.setForeground(COLOR_TEXTO_SUAVE);
+        resumen.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 8, 0));
+
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout());
+        panel.add(resumen, java.awt.BorderLayout.NORTH);
+        panel.add(desplazamiento, java.awt.BorderLayout.CENTER);
+
+        JOptionPane.showMessageDialog(this, panel, "Historial del gremio", JOptionPane.PLAIN_MESSAGE,
+                new javax.swing.ImageIcon(getClass().getResource("/com/wotc/gremio/iconos/emblema_32.png")));
+    }
+
+    private static String contar(long cantidad, String singular, String plural) {
+        return cantidad + " " + (cantidad == 1 ? singular : plural);
+    }
+
     private static String estadistica(String valor, String etiqueta) {
         return "<html><center><font size='5' color='#E3B341'><b>" + valor
                 + "</b></font><br>" + etiqueta + "</center></html>";
@@ -792,6 +850,7 @@ public class VentanaGremio extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnExpulsar;
+    private javax.swing.JButton btnHistorial;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnRegistrar;
     private javax.swing.JButton btnSimular;

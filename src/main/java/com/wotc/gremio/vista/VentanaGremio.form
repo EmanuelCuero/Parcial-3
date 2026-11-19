@@ -555,6 +555,8 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lblAyudaTabla" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="related" max="32767" attributes="0"/>
+                              <Component id="btnHistorial" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="related" max="-2" attributes="0"/>
                               <Component id="btnExpulsar" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -570,6 +572,7 @@
                       <EmptySpace type="related" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="lblAyudaTabla" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnHistorial" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnExpulsar" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -671,6 +674,21 @@
                   <Color id="Hand Cursor"/>
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnHistorial">
+              <Properties>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="58" green="33" red="2a" type="rgb"/>
+                </Property>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/com/wotc/gremio/iconos/btn_historial.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Historial"/>
+                <Property name="toolTipText" type="java.lang.String" value="Ver todo lo que ha pasado en el gremio (registro_gremio.txt)"/>
+                <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
+                  <Color id="Hand Cursor"/>
+                </Property>
               </Properties>
             </Component>
           </SubComponents>
