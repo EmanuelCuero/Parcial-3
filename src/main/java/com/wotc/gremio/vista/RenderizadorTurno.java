@@ -1,7 +1,6 @@
 package com.wotc.gremio.vista;
 
 import com.wotc.gremio.modelo.Aventurero;
-import com.wotc.gremio.modelo.Bardo;
 import com.wotc.gremio.modelo.ResultadoTurno;
 import com.wotc.gremio.modelo.TurnoCombate;
 import java.awt.Color;
@@ -41,7 +40,7 @@ public class RenderizadorTurno extends DefaultListCellRenderer {
                 ? "<b style='color:#B23A48'>" + resultado.danio() + " de daño</b>"
                 : resultado.curacion() > 0
                 ? "<b style='color:#2E8B6E'>+" + resultado.curacion() + " PV curados</b>"
-                : a instanceof Bardo
+                : a.esApoyo()
                 ? "<b style='color:#6C4AB6'>apoyo</b>"
                 : "<b style='color:#6B7280'>sin daño</b>";
         setText("<html><div style='width:" + ancho + "px'>"
