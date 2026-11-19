@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wotc.gremio.excepciones.AventureroDuplicadoException;
+import com.wotc.gremio.excepciones.ArchivoGremioException;
+import com.wotc.gremio.excepciones.FormatoArchivoException;
 import com.wotc.gremio.excepciones.HistorialException;
 import com.wotc.gremio.modelo.Aventurero;
 import com.wotc.gremio.modelo.Bardo;
@@ -18,6 +20,7 @@ import com.wotc.gremio.modelo.DadosFijos;
 import com.wotc.gremio.modelo.Mago;
 import com.wotc.gremio.modelo.ResultadoCombate;
 import com.wotc.gremio.modelo.SimuladorCombate;
+import com.wotc.gremio.persistencia.ArchivoGremio;
 import com.wotc.gremio.persistencia.RegistroGremio;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -175,5 +178,71 @@ class GremioControllerTest {
                 () -> conFallo.registrarAventurero(new Guerrero("Bruenor", true)));
         assertTrue(error.getMessage().startsWith("No se pudo guardar el registro en el historial"));
         assertTrue(conFallo.getAventureros().isEmpty());
+    }
+
+    @Test
+    void elGremioSeGuardaYSeRecuperaEnUnaNuevaSesion() throws Exception {
+        controlador.registrarAventurero(new Guerrero("Bruenor", 5, 52, true));
+        controlador.registrarAventurero(new Clerigo("Shandra", 4, 30, "Lathander"));
+
+        // Una nueva sesión de la aplicación lee lo que guardó la anterior.
+        GremioController nuevaSesion = new GremioController(new RegistroGremio(archivo));
+        int cargados = nuevaSesion.cargarGremio();
+
+        assertEquals(2, cargados);
+        assertEquals(List.of("Bruenor", "Shandra"),
+                nuevaSesion.getAventureros().stream().map(Aventurero::getNombre).toList());
+        assertTrue(nuevaSesion.getAventureros().get(1) instanceof Clerigo);
+    }
+
+    @Test
+    void expulsarTambienActualizaElArchivoDelGremio() throws Exception {
+        controlador.registrarAventurero(new Guerrero("Bruenor", 5, 52, true));
+        controlador.registrarAventurero(new Mago("Elminster", 12, 61, 9));
+        controlador.expulsarAventurero(0);
+
+        List<Aventurero> guardados = controlador.getArchivoGremio().cargar();
+        assertEquals(1, guardados.size());
+        assertEquals("Elminster", guardados.get(0).getNombre());
+    }
+
+    @Test
+    void cargarDosVecesNoDuplicaAventureros() throws Exception {
+        controlador.registrarAventurero(new Mago("Elminster", 12, 61, 9));
+
+        assertEquals(0, controlador.cargarGremio());
+        assertEquals(1, controlador.getAventureros().size());
+    }
+
+    @Test
+    void unArchivoCorruptoNoCargaANadie() throws Exception {
+        ArchivoGremio corrupto = new ArchivoGremio(carpeta.resolve("corrupto.txt"));
+        Files.write(corrupto.getArchivo(), List.of("Mago;Elminster;12;61;9", "basura"));
+        GremioController otro = new GremioController(new RegistroGremio(archivo),
+                new SimuladorCombate(), corrupto);
+
+        FormatoArchivoException ex = assertThrows(FormatoArchivoException.class, otro::cargarGremio);
+        assertEquals(2, ex.getNumeroLinea());
+        assertTrue(otro.getAventureros().isEmpty());
+    }
+
+    @Test
+    void siNoSePuedeGuardarElGremioNoSeRegistraElAventurero() throws Exception {
+        Path carpetaComoArchivo = Files.createDirectory(carpeta.resolve("bloqueado"));
+        GremioController conFallo = new GremioController(new RegistroGremio(archivo),
+                new SimuladorCombate(), new ArchivoGremio(carpetaComoArchivo));
+
+        ArchivoGremioException error = assertThrows(ArchivoGremioException.class,
+                () -> conFallo.registrarAventurero(new Guerrero("Bruenor", true)));
+        assertTrue(error.getMessage().startsWith("No se pudo guardar el archivo del gremio"));
+        assertTrue(conFallo.getAventureros().isEmpty());
+    }
+
+    @Test
+    void lasDependenciasSonObligatorias() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new GremioController(new RegistroGremio(archivo), null, new ArchivoGremio()));
+        assertThrows(IllegalArgumentException.class,
+                () -> new GremioController(new RegistroGremio(archivo), new SimuladorCombate(), null));
     }
 }
