@@ -245,4 +245,22 @@ class GremioControllerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new GremioController(new RegistroGremio(archivo), new SimuladorCombate(), null));
     }
+
+    @Test
+    void leerHistorialMuestraLoQueHaPasadoEnElGremio() throws Exception {
+        controlador.registrarAventurero(new Guerrero("Bruenor", 5, 52, true));
+        controlador.simularBatalla();
+        controlador.expulsarAventurero(0);
+
+        List<String> historial = controlador.leerHistorial();
+
+        assertTrue(historial.get(0).contains("REGISTRO: Guerrero Bruenor"));
+        assertTrue(historial.stream().anyMatch(l -> l.contains("SIMULACIÓN DE COMBATE")));
+        assertTrue(historial.get(historial.size() - 1).contains("EXPULSIÓN: Guerrero Bruenor"));
+    }
+
+    @Test
+    void elHistorialEstaVacioAlEmpezar() throws Exception {
+        assertTrue(controlador.leerHistorial().isEmpty());
+    }
 }
